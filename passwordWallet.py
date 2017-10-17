@@ -25,6 +25,7 @@ class myDB(object):
         except BaseException as error:
             print('Some error occured: {}'.format(error))
         else:
+            self._db_connection.commit()
             return result
 
     def __del__(self):
@@ -40,7 +41,6 @@ def hashpassword(password):
     return results
 
 def newuser():
-    db = myDB()
     name = str(input('Your username: '))
     passw= str(input('Your new password: '))
     password = hashpassword(passw)
@@ -48,10 +48,11 @@ def newuser():
                   "(id, username, password, salt) "
                   "VALUES (%s, %s, %s, %s)")
     data_newuser = ('', name, password[1], password[0])
-    query = db.query(add_newuser, data_newuser)
-    print(query)
+    db.query(add_newuser, data_newuser)
 
 def program():
+    global db
+    db = myDB()
     while True:
         showMenu()
         try:
