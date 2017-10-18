@@ -6,6 +6,7 @@ def showMenu():
          1.create a new user
          2.Open existing user
          3.exit""")
+
 class myDB(object):
     _db_connection = None
     _db_cursor = None 
@@ -17,7 +18,7 @@ class myDB(object):
             print('Cannot connect to DB!')
             print(err)
         else:
-            self._db_cursor = self._db_connection.cursor()
+            self._db_cursor = self._db_connection.cursor(buffered = True)
 
     def query(self, query, params):
         try: 
@@ -67,16 +68,16 @@ def program():
             print('Your response must be a number 1 or 2 or 3')
             continue
         elif a == 1:
-            newuser()
+            newuser() 
             print('ok')
             continue
         elif a == 2:
             user = str(input('Enter your username: '))
-            cnx = dbconnect()
-            cursor = cnx.cursor(buffered = True)
             query = ("SELECT username FROM users")
-            cursor.execute(query)
-            for row in cursor:           #we get a tulpes representing a row in db
+            db.query(query, '')
+            a = db._db_cursor._fetch_row
+            print(a)
+            for row in db._db_cursor:           #we get a tulpes representing a row in db
                 for field in row:        #we go throug every tulpe to get username
                     if field == user:
                         attempts = 0
