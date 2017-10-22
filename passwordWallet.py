@@ -28,6 +28,15 @@ class myDB(object):
         else:
             self._db_connection.commit()
             return result
+    
+    def getonevalue(self):
+        """
+        This method gets a value from DB cursor
+        Row and field represent row and field in DB 
+        """
+        for row in self._db_cursor:
+            for field in row:
+                return field
 
     def __del__(self):
         self._db_cursor.close()
@@ -73,32 +82,30 @@ def program():
             continue
         elif a == 2:
             user = str(input('Enter your username: '))
-            query = ("SELECT username FROM users")
-            db.query(query, '')
-            a = db._db_cursor._fetch_row
-            print(a)
-            for row in db._db_cursor:           #we get a tulpes representing a row in db
-                for field in row:        #we go throug every tulpe to get username
-                    if field == user:
-                        attempts = 0
-                        while attempts < 3:
-                            passwd_input = getpass.getpass('Your password: ')
-                            query = ('SELECT id, password, salt FROM users WHERE username = %s') 
-                            cursor.execute(query, (user,))
-                            passwrow = cursor.fetchone()
-                            salt = passwrow[2].encode('utf-8')
-                            passwd_input = passwd_input.encode('utf-8')
-                            hashed = hashlib.sha256(passwd_input + salt).hexdigest()
-                            print(hashed)
-                            print(passwrow)
-                            if hashed == passwrow[1]:
-                                print('Youre in ')
-                                cursor.reset()
-                                query = ('SELECT site_name, site_password FROM collections WHERE id_user = %s')
-                                cursor.execute(query, (passwrow[0],))
-                                sites = cursor.fetchall()
-                                print(sites)
-                            else: attempts = attempts + 1   
+            query = ("SELECT username FROM users WHERE username = %s")
+            db.query(query, (user, ))
+            name = db.getonevalue()
+            if name  == user:
+                print(name)
+                attempts = 0
+                while attempts < 3:
+                    passwd_input = getpass.getpass('Your password: ')
+                    query = ('SELECT id, password, salt FROM users WHERE username = %s') 
+                    cursor.execute(query, (user,))
+                    passwrow = cursor.fetchone()
+                    salt = passwrow[2].encode('utf-8')
+                    passwd_input = passwd_input.encode('utf-8')
+                    hashed = hashlib.sha256(passwd_input + salt).hexdigest()
+                    print(hashed)
+                    print(passwrow)
+                    if hashed == passwrow[1]:
+                        print('Youre in ')
+                        cursor.reset()
+                        query = ('SELECT site_name, site_password FROM collections WHERE id_user = %s')
+                        cursor.execute(query, (passwrow[0],))
+                        sites = cursor.fetchall()
+                        print(sites)
+                    else: attempts = attempts + 1   
             #cursor.close()
             #cnx.close()
         else:
