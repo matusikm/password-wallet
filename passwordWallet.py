@@ -1,11 +1,6 @@
 import mysql.connector
 import os, hashlib, uuid, getpass
 
-def showMenu():
-    print("""What do you wanna do?
-         1.create a new user
-         2.Open existing user
-         3.exit""")
 
 class myDB(object):
     _db_connection = None
@@ -42,6 +37,14 @@ class myDB(object):
         self._db_cursor.close()
         self._db_connection.close()
 
+class myApp(object):
+    def showMenu(self):
+        print("""What do you wanna do?
+             1.create a new user
+             2.Open existing user
+             3.exit""")
+
+
 def hashpassword(password):
     salt = uuid.uuid4().hex.encode('utf-8')
     password = password.encode('utf-8')
@@ -52,35 +55,47 @@ def hashpassword(password):
 
 def newuser():
     name = str(input('Your username: '))
-    passw= str(input('Your new password: '))
-    password = hashpassword(passw)
-    add_newuser = ("INSERT INTO users "
-                  "(id, username, password, salt) "
-                  "VALUES (%s, %s, %s, %s)")
-    data_newuser = ('', name, password[1], password[0])
-    db.query(add_newuser, data_newuser)
+    select_users = ("SELECT username FROM users")
+    existence = None
+    db.query(select_users, '')
+    for row in db._db_cursor:
+        for field in row:
+            if name == field:
+                existence = 1
+    if existence == 1:
+        print('Name already exist in DB!\n')
+    else:
+        passw= str(input('Your new password: '))
+        password = hashpassword(passw)
+        add_newuser = ("INSERT INTO users "
+                      "(id, username, password, salt) "
+                      "VALUES (%s, %s, %s, %s)")
+        data_newuser = ('', name, password[1], password[0])
+        db.query(add_newuser, data_newuser)
+        print('New user created\n')
 
-def program():
+
+if __name__ == '__main__':
     global db
     db = myDB()
+    app = myApp()
     while True:
-        showMenu()
+        app.showMenu()
         try:
-            a = int(input('Your choice?: '))
+            choice = int(input('Your choice?: '))
         except ValueError:
             os.system('cls' if os.name == 'nt' else 'clear')
             print('Your response must be a number 1 or 2 or 3')
             continue
 
-        if a not in (1, 2, 3):
+        if choice not in (1, 2, 3):
             os.system('cls' if os.name == 'nt' else 'clear')
             print('Your response must be a number 1 or 2 or 3')
             continue
-        elif a == 1:
-            newuser() 
-            print('ok')
+        elif choice == 1:
+            newuser()
             continue
-        elif a == 2:
+        elif choice == 2:
             user = str(input('Enter your username: '))
             query = ("SELECT username FROM users WHERE username = %s")
             db.query(query, (user, ))
@@ -106,10 +121,8 @@ def program():
                         sites = cursor.fetchall()
                         print(sites)
                     else: attempts = attempts + 1   
-            #cursor.close()
-            #cnx.close()
         else:
+            db._db_cursor.close()
+            db._db_connection.close()
             quit()
 
-program()
-#hashpassword('wfekwkejf')
